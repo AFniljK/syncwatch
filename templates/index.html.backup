@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-theme" content="dark light">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <title>Nigma Stream</title>
+</head>
+
+<body>
+    <main class="container" x-data="{ origin: window.location.origin }">
+        <h2><u>Nigma Stream</u></h2>
+        <hr>
+        <video id="hls_video" width="100%" @dblclick="video.requestFullscreen();" @click="const url = origin + (video.paused ? '/resume': '/hold'); fetch(url);"></video>
+        <div role="group">
+            <button @click="console.log('reverse');" class="secondary">&lt;&lt;</button>
+            <button @click="fetch(origin+'/hold');" class="secondary">I I</button>
+            <button @click="fetch(origin+'/resume');" class="secondary">i&gt;</button>
+            <button @click="console.log('skip');" class="secondary">&gt;&gt;</button>
+        </div>
+        <div role="group">
+            <button @click="fetch(origin+'/sync/'+video.currentTime)" class="secondary" width="100%">Sync</button>
+        </div>
+    </main>
+</body>
+
+<script>
+    const video = document.getElementById("hls_video");
+    const content_source = window.location.origin + "/content/output.m3u8";
+
+    if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(content_source);
+        hls.attachMedia(video);
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        // For Safari and some iOS devices
+        video.src = content_source;
+    } else {
+        alert("Your browser doesn't support HLS playback.");
+    }
+
+    const sse_stream = new EventSource("/event");
+    sse_stream.onmessage = (event) => {
+        console.log(event.data);
+        if (event.data == "resume") {
+            video.play();
+        }
+        if (event.data == "hold") {
+            video.pause();
+        }
+        if (event.data.split(":")[0] == "seek") {
+            video.currentTime = event.data.split(":")[1];
+        }
+    };
+
+</script>
+
+</html>
