@@ -17,8 +17,7 @@
         <h2><u>Nigma Stream</u></h2>
         <hr>
         <video id="hls_video" width="100%" @play.throttle="fetch(origin+'/resume');"
-            @pause.throttle="fetch(origin+'/hold');" @seeked.throttle.500ms="fetch(origin+'/sync/'+video.currentTime);"
-            controls></video>
+            @pause.throttle="fetch(origin+'/hold');" controls></video>
         <div role="group">
             <button @click="fetch(origin+'/sync/'+video.currentTime);" class="secondary" width="100%">Sync</button>
         </div>
